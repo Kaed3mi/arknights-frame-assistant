@@ -34,10 +34,11 @@
 
 用 `HotIf(HotkeyContext)` 回调（`core/hotkey/hotkey_service.ahk` 顶部）限制热键作用域：
 
-- 鼠标键/滚轮（LButton/RButton/MButton/XButton1/2/Wheel*）返回 `IsMouseInClient()`（悬停在游戏窗口上才触发，修复窗口外任务栏/桌面点击被吞）。
-- 键盘键返回 `WinActive("ahk_exe Arknights.exe")` **或** `IsMouseInClient()`（#213：游戏失焦时鼠标悬停游戏窗口也能操作，动作层负责激活游戏；该失焦悬停路径受「自定义」页开关 `HotkeyService.GetHoverOperate()` 门控，保存/应用后生效，关闭后键盘键仅活动窗口触发，鼠标键/滚轮不受影响）。
+- `RequireForeground`（`[Main]`，默认 `1`；「其他设置 → 自定义」的「仅游戏在前台时触发热键」）开启时，键盘键、鼠标键、滚轮和热键启用/禁用快捷键都要求目标游戏窗口处于前台；鼠标键与滚轮还要求鼠标在游戏客户区内。前台限制优先于 `HoverOperate`。条件读取内存缓存，启动、保存/应用/重置以及单键持久化变更后同步，不在 `HotIf` 内读取 INI。
+- 前台限制关闭时，鼠标键/滚轮（LButton/RButton/MButton/XButton1/2/Wheel*）返回 `IsMouseInClient()`（悬停在游戏窗口上才触发）。键盘键通过 `GameTarget` 查询前台窗口，或在 `HotkeyService.GetHoverOperate()` 开启时允许 `IsMouseInClient()`；动作层负责激活游戏。
+- 已处理按下的守卫补发 Up 变体优先按 `KeyForward.DownHandled` 放行，保证切出游戏后仍可结束透传按住周期；防递归的 `SuppressUp` 判定保持在前台检查之前。
 
-**动作包装**（#213，`_WrapAction` 于 `_RegisterOne` 注册时套用）：主热键与 OnUp 型动作执行前 `WinActivate` 游戏 + `WinWaitActive`（超时 500ms 则跳过动作，避免按键发往非游戏窗口），激活后不恢复原窗口（焦点留在游戏）；守卫补发 Up 变体（`ActionUpForward`）与 SwitchKey 切换键**不包装**。
+**动作包装**（`_WrapAction` 于 `_RegisterOne` 注册时套用）：前台限制开启时，主热键与 OnUp 型动作进入回调后再次核验游戏是否仍在前台；失焦则跳过，不主动激活游戏。前台限制关闭时，失焦动作先激活游戏并等待窗口成为前台（超时由 `ActivateTimeoutMs` 控制），激活后不恢复原窗口；守卫补发 Up 变体（`ActionUpForward`）与 SwitchKey 切换键不包装。
 
 拦截正则通过 `GameKeys.GetInterceptPattern()` 动态生成——从注册表读取所有游戏按键 + `Escape|RButton|MButton`。AFA 热键绑定的按键若匹配拦截正则，不加 `~` 前缀（阻止原键传递到游戏），否则加 `~` 前缀（透传）。**down 与 Up 两个变体的 `~` 必须一致**（非拦截键注册 `~X Up`）：不带 `~` 的 Up 变体是「吞键型」，会让 AHK 把该键的 down 也一并吞掉（详见下节）；拦截键两侧都不带 `~`，由透传层补发。用户自定义游戏按键后，轮询检测到注册表变更自动重建热键，拦截列表随之更新。
 
