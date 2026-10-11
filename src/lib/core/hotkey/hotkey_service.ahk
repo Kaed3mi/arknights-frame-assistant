@@ -12,6 +12,17 @@ HotkeyContext(hotkeyName) {
         if KeyForward.DownHandled.Has(pureKey)
             return true
     }
+    if HotkeyService.GetRequireForeground() {
+        if GameTarget.IsBound() {
+            if !GameTarget.IsForegroundCached()
+                return false
+        } else {
+            if !GameTarget.IsActive()
+                return false
+            GameClientRegistry.ScheduleRefresh()
+        }
+        return !IsMouseKey(pureKey) || IsMouseInClient()
+    }
     ; 鼠标键/滚轮：悬停判定
     if IsMouseKey(pureKey)
         return IsMouseInClient()
@@ -31,6 +42,15 @@ class HotkeyService {
     static ActivateTimeoutMs := 200
 
     static _HoverOperate := true
+    static _RequireForeground := true
+
+    static SetRequireForeground(value) {
+        this._RequireForeground := value
+    }
+
+    static GetRequireForeground() {
+        return this._RequireForeground
+    }
 
     static SetHoverOperate(value) {
         this._HoverOperate := value
@@ -128,7 +148,9 @@ class HotkeyService {
 
     ; 处理设置变更
     static _HandleSettingsChanged(data) {
-        if (data.key = "HoverOperate")
+        if (data.key = "RequireForeground")
+            this.SetRequireForeground(data.value == "1")
+        else if (data.key = "HoverOperate")
             this.SetHoverOperate(data.value == "1")
         else if (data.key = "SwitchHotkey")
             this.SetSwitchKey()
@@ -138,6 +160,7 @@ class HotkeyService {
 
     ; 处理保存/应用/重置完成
     static _HandleSettingsSavedOrApplied() {
+        this.SetRequireForeground(Config.ReadImportantFromIni("RequireForeground") == "1")
         this.SetHoverOperate(Config.ReadCustomFromIni("HoverOperate") == "1")
         if (this.HotkeyState)
             this.EnableByTab(this._ActiveTab)
@@ -202,9 +225,11 @@ class HotkeyService {
 
     static ActiveSwitchHotkey := ""
 
-    ; 包装动作回调：失焦悬停时先激活游戏窗口
+    ; 包装动作回调：前台限制开启时跳过失焦动作，否则激活游戏窗口
     static _WrapAction(fn) {
         Wrapped(ThisHotkey) {
+            if (HotkeyService.GetRequireForeground() && !GameTarget.IsActive())
+                return
             if HoldGuard.ShouldGate(KeyForward.PureKeyName(ThisHotkey))
                 && HoldGuard.TryBegin(KeyForward.PureKeyName(ThisHotkey))
                 return
@@ -213,6 +238,8 @@ class HotkeyService {
                 return
             }
             if !GameTarget.IsActive() {
+                if HotkeyService.GetRequireForeground()
+                    return
                 GameTarget.Activate()
                 if !GameTarget.WaitActive(HotkeyService.ActivateTimeoutMs) {
                     Logger.Warn("Hotkey", "动作跳过：激活游戏窗口超时（key=" KeyForward.PureKeyName(ThisHotkey) "）")

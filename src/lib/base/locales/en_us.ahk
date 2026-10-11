@@ -66,6 +66,8 @@ class LocaleEnUS {
         "前进33ms延迟", "Advance 33ms Delay",
         "前进166ms延迟", "Advance 166ms Delay",
         "游戏窗口未激活时允许鼠标悬停在窗口上触发热键", "Allow hover operation when game window is inactive",
+        "仅游戏在前台时触发热键", "Only trigger hotkeys while the game is in the foreground",
+        "开启后，游戏在后台时不触发键盘或鼠标热键，优先于悬停操作设置", "Blocks keyboard and mouse hotkeys while the game is in the background; overrides hover operation",
         "前进 {1}ms", "Advance {1}ms",
         "存在按键冲突", "Key conflict exists",
         "修改尚未保存或应用", "Changes not saved or applied",

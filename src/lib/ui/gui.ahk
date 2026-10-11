@@ -110,7 +110,7 @@ class GuiManager {
     static GuiImportantKeys := ["Frame", "AutoExit", "AutoOpenSettings", "ExitOnWindowClose",
         "DefaultStrongHoldProtocol", "TabOrder", "HiddenTabs", "AutoRunGame", "AutoStartWithGame", "GamePath",
         "UpdateChannel", "UpdateSource", "AutoUpdate", "UseGitHubToken", "GitHubToken", "AutoBeginPause", "AutoBeginSpeed",
-        "BackCeaseOperations", "InLevelGuard", "DebugEnabled", "Language", "ThemeMode"]
+        "BackCeaseOperations", "InLevelGuard", "RequireForeground", "DebugEnabled", "Language", "ThemeMode"]
 
     ; 初始化GUI（单例模式）
     static Init() {
@@ -827,6 +827,12 @@ class GuiManager {
         StatusBarHints.Register(editFrameSkip3, "前进设定的等待时长（毫秒）")
         this.CustomControls.Push(txtFrameSkip3)
         this.CustomControls.Push(editFrameSkip3)
+
+        checkboxRequireForeground := Theme.Add(this.MainGui, "Checkbox", "xs y+14 h24 vRequireForeground", I18n.T("仅游戏在前台时触发热键"))
+        checkboxRequireForeground.OnEvent("Click", (*) => this.TrackChange("RequireForeground"))
+        StatusBarHints.Register(checkboxRequireForeground, "开启后，游戏在后台时不触发键盘或鼠标热键，优先于悬停操作设置")
+        this.MainGui["RequireForeground"].Value := Config.GetImportant("RequireForeground")
+        this.CustomControls.Push(checkboxRequireForeground)
 
         ; 失焦悬停操作热键开关
         checkboxHoverOperate := Theme.Add(this.MainGui, "Checkbox", "xs y+14 w" Max(290, Metrics.TextWidth(I18n.T("游戏窗口未激活时允许鼠标悬停在窗口上触发热键")) + 24) " h24 vHoverOperate", I18n.T("游戏窗口未激活时允许鼠标悬停在窗口上触发热键"))

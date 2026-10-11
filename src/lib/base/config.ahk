@@ -45,6 +45,7 @@ class Config {
         "AutoBeginSpeed", "0",
         "BackCeaseOperations", "1",
         "InLevelGuard", "0",
+        "RequireForeground", "1",
         "DebugEnabled", "0",
         "Language", "auto",
         "ThemeMode", "auto",

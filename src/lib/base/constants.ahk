@@ -85,6 +85,7 @@ class Constants {
         "AutoBeginSpeed", "开局自动二倍速",
         "BackCeaseOperations", "使用“返回上级菜单”放弃行动",
         "InLevelGuard", "在非战斗关卡场景禁用常规战斗热键",
+        "RequireForeground", "仅游戏在前台时触发热键",
         "DebugEnabled", "显示调试日志控制台",
         "Language", "界面语言",
         "ThemeMode", "界面主题",
