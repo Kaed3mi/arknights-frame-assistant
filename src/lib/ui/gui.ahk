@@ -834,13 +834,6 @@ class GuiManager {
         this.CustomControls.Push(txtFrameSkip3)
         this.CustomControls.Push(editFrameSkip3)
 
-        ; 失焦悬停操作热键开关
-        checkboxHoverOperate := Theme.Add(this.MainGui, "Checkbox", "xs y+14 w" Max(290, Metrics.TextWidth(I18n.T("游戏窗口未激活时允许鼠标悬停在窗口上触发热键")) + 24) " h24 vHoverOperate", I18n.T("游戏窗口未激活时允许鼠标悬停在窗口上触发热键"))
-        checkboxHoverOperate.OnEvent("Click", (*) => this.TrackChange("HoverOperate"))
-        StatusBarHints.Register(checkboxHoverOperate, "游戏窗口未激活时，鼠标悬停在窗口上也能触发热键")
-        this.MainGui["HoverOperate"].Value := Config.GetCustom("HoverOperate")
-        this.CustomControls.Push(checkboxHoverOperate)
-
         ; 标签页可见性与顺序
         tabManagerTitle := Theme.Add(this.MainGui, "Text", "x" this.TabManagerX " y" this.TabManagerTitleY " w" this.TabManagerRowWidth
             " h20 cHeading", I18n.T("顶部标签页"))
@@ -1662,10 +1655,6 @@ class GuiManager {
                 this._InitialValues[key] := this.MainGui[key].Value
             }
         }
-        ; 失焦悬停操作开关
-        try {
-            this._InitialValues["HoverOperate"] := this.MainGui["HoverOperate"].Value
-        }
         ; 自定义按键
         this._InitialCustomHotkeys := this._CloneCustomHotkeys(Config.AllCustomHotkeys)
     }
@@ -1734,10 +1723,6 @@ class GuiManager {
                 if (this.MainGui[key].Value != this._InitialValues[key])
                     return false
             }
-        }
-        try {
-            if (this.MainGui["HoverOperate"].Value != this._InitialValues["HoverOperate"])
-                return false
         }
         if !this._CustomHotkeysEqual(Config.AllCustomHotkeys, this._InitialCustomHotkeys)
             return false

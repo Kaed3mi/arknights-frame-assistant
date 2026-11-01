@@ -12,33 +12,18 @@ HotkeyContext(hotkeyName) {
         if KeyForward.DownHandled.Has(pureKey)
             return true
     }
-    ; 鼠标键/滚轮：悬停判定
-    if IsMouseKey(pureKey)
-        return IsMouseInClient()
-    ; 键盘键：优先热路径廉价校验，未命中才回退 WinActive 判定并异步补识别
+    ; 热键仅在游戏前台生效；鼠标键还须位于游戏窗口内
     if GameTarget.IsForegroundCached()
-        return true
+        return !IsMouseKey(pureKey) || IsMouseInClient()
     if WinActive(GameTarget.WinTitle()) {
         GameClientRegistry.ScheduleRefresh()
-        return true
+        return !IsMouseKey(pureKey) || IsMouseInClient()
     }
-    return HotkeyService.GetHoverOperate() && IsMouseInClient()
+    return false
 }
 
 class HotkeyService {
     static HotkeyState := true
-
-    static ActivateTimeoutMs := 200
-
-    static _HoverOperate := true
-
-    static SetHoverOperate(value) {
-        this._HoverOperate := value
-    }
-
-    static GetHoverOperate() {
-        return this._HoverOperate
-    }
 
     ; 热键域内部状态
     static _ActiveTab := "keyBind"
@@ -128,9 +113,7 @@ class HotkeyService {
 
     ; 处理设置变更
     static _HandleSettingsChanged(data) {
-        if (data.key = "HoverOperate")
-            this.SetHoverOperate(data.value == "1")
-        else if (data.key = "SwitchHotkey")
+        if (data.key = "SwitchHotkey")
             this.SetSwitchKey()
         else if (Config.AllHotkeys.Has(data.key) && this.HotkeyState)
             this.EnableByTab(this._ActiveTab)
@@ -138,7 +121,6 @@ class HotkeyService {
 
     ; 处理保存/应用/重置完成
     static _HandleSettingsSavedOrApplied() {
-        this.SetHoverOperate(Config.ReadCustomFromIni("HoverOperate") == "1")
         if (this.HotkeyState)
             this.EnableByTab(this._ActiveTab)
         this.SetSwitchKey()
@@ -209,23 +191,14 @@ class HotkeyService {
 
     static ActiveSwitchHotkey := ""
 
-    ; 包装动作回调：失焦悬停时先激活游戏窗口
+    ; 包装动作回调：执行前复核游戏焦点
     static _WrapAction(fn) {
         Wrapped(ThisHotkey) {
+            if !GameTarget.IsActive()
+                return
             if HoldGuard.ShouldGate(KeyForward.PureKeyName(ThisHotkey))
                 && HoldGuard.TryBegin(KeyForward.PureKeyName(ThisHotkey))
                 return
-            if !GameTarget.Exists() {
-                Logger.Warn("Hotkey", "动作跳过：目标游戏窗口不存在（key=" KeyForward.PureKeyName(ThisHotkey) "）")
-                return
-            }
-            if !GameTarget.IsActive() {
-                GameTarget.Activate()
-                if !GameTarget.WaitActive(HotkeyService.ActivateTimeoutMs) {
-                    Logger.Warn("Hotkey", "动作跳过：激活游戏窗口超时（key=" KeyForward.PureKeyName(ThisHotkey) "）")
-                    return
-                }
-            }
             try {
                 fn(ThisHotkey)
             } catch Error as e {

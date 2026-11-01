@@ -34,7 +34,6 @@ class SettingsService {
     static _RefreshRuntime() {
         Logger.SetConsoleEnabled(Config.ReadImportantFromIni("DebugEnabled") == "1")
         TimingService.Refresh()
-        HotkeyService.SetHoverOperate(Config.ReadCustomFromIni("HoverOperate") == "1")
         lang := Config.ReadImportantFromIni("Language")
         if (lang = "auto")
             lang := I18n.DetectAutoLocale()

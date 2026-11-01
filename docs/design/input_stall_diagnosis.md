@@ -24,7 +24,7 @@ reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Windows" /v LowLevelHo
 ```
 
 - 键不存在 ⇒ 用系统默认值（本机实测：该键**不存在**）。该键存在但数值很小时，任何钩子持有者的短暂停顿都会被放大成"输入丢失"。
-- AFA 侧相关预算：`main.ahk` 的 `#HotIfTimeout 100`（AHK 默认 1000ms，比系统红线宽得多，故收紧）；动作层最长不可中断窗口是失焦悬停激活的 `HotkeyService.ActivateTimeoutMs`(200ms)。
+- AFA 侧相关预算：`main.ahk` 的 `#HotIfTimeout 100`（AHK 默认 1000ms，比系统红线宽得多，故收紧）；动作入口会复核游戏焦点，失焦直接跳过，不再执行失焦悬停激活等待。
 
 判读时注意：**这个键缺失不等于没有超时**，只等于用默认值。
 

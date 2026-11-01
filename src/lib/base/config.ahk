@@ -56,8 +56,7 @@ class Config {
         "SwitchHotkey", "",
         "FrameSkip16msDelay", "16",
         "FrameSkip33msDelay", "30",
-        "FrameSkip166msDelay", "165",
-        "HoverOperate", "0"
+        "FrameSkip166msDelay", "165"
     )
 
     ; 配置文件路径

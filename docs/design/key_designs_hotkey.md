@@ -34,8 +34,10 @@
 
 用 `HotIf(HotkeyContext)` 回调（`core/hotkey/hotkey_service.ahk` 顶部）限制热键作用域：
 
-- 鼠标键/滚轮（LButton/RButton/MButton/XButton1/2/Wheel*）返回 `IsMouseInClient()`（悬停在游戏窗口上才触发，修复窗口外任务栏/桌面点击被吞）。
-- 键盘键返回 `WinActive("ahk_exe Arknights.exe")` **或** `IsMouseInClient()`（#213：游戏失焦时鼠标悬停游戏窗口也能操作，动作层负责激活游戏；该失焦悬停路径受「自定义」页开关 `HotkeyService.GetHoverOperate()` 门控，保存/应用后生效，关闭后键盘键仅活动窗口触发，鼠标键/滚轮不受影响）。
+- 键盘键仅在目标游戏窗口处于前台时触发；先使用 `GameTarget.IsForegroundCached()` 廉价校验，未命中再由 `WinActive(GameTarget.WinTitle())` 回退识别。
+- 鼠标键/滚轮除要求游戏在前台，还须通过 `IsMouseInClient()` 悬停判定。
+- `_WrapAction` 在执行动作前再次检查游戏焦点，失焦则跳过，不主动激活游戏。已处理按键的 Up 变体仍可进入松键收尾，避免切走后卡键。
+- 不再提供失焦悬停操作；旧配置文件中的 `HoverOperate` 不参与热键判定。
 
 **动作包装**（#213，`_WrapAction` 于 `_RegisterOne` 注册时套用）：主热键与 OnUp 型动作执行前 `WinActivate` 游戏 + `WinWaitActive`（超时 500ms 则跳过动作，避免按键发往非游戏窗口），激活后不恢复原窗口（焦点留在游戏）；守卫补发 Up 变体（`ActionUpForward`）与 SwitchKey 切换键**不包装**。
 

@@ -84,8 +84,7 @@ class Constants {
         "SwitchHotkey", "启用/禁用热键",
         "FrameSkip16msDelay", "前进16ms延迟",
         "FrameSkip33msDelay", "前进33ms延迟",
-        "FrameSkip166msDelay", "前进166ms延迟",
-        "HoverOperate", "游戏窗口未激活时允许鼠标悬停在窗口上触发热键"
+        "FrameSkip166msDelay", "前进166ms延迟"
     )
 
     ; 自定义按键：单条数量上限与类型选项
